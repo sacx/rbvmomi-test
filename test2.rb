@@ -32,11 +32,13 @@ def find_pool(vim,poolName)
 end
 
 
-vim = RbVmomi::VIM.connect host: 'hostname',user: 'user', password: 'password', insecure: true
-vm=vim.serviceInstance.find_datacenter.find_vm("Folder/tmpl-debian-6-64") or abort ("VM Not Found!")
+vim = RbVmomi::VIM.connect host: 'host',user: 'user', password: 'password', insecure: true
+vm=vim.serviceInstance.find_datacenter.find_vm("Folder/template-debian-6-64") or abort ("VM Not Found!")
+
+xconfig=RbVmomi::VIM.VirtualMachineConfigSpec(:annotation => 'Creation time:  ' + Time.now.strftime("%Y-%m-%d %H:%M") + "\n\n")
 
 relocateSpec = RbVmomi::VIM.VirtualMachineRelocateSpec(:pool => find_pool(vim,'TEST'))
-spec = RbVmomi::VIM.VirtualMachineCloneSpec(:location => relocateSpec, :powerOn => false, :template => false)
+spec = RbVmomi::VIM.VirtualMachineCloneSpec(:location => relocateSpec, :powerOn => false, :template => false, :config => xconfig)
 
 task = vm.CloneVM_Task(:folder => vm.parent, :name => "test-clone", :spec => spec)
 print "Cloning ..."
